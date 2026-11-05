@@ -108,6 +108,7 @@ body::before {
 }
 .hero-names { font-size: 1.25rem; font-weight: 600; }
 .hero-names span { color: var(--pink-3); }
+.hero-since { margin-top: 10px; font-size: 0.95rem; color: var(--text-soft); }
 .hero-counters {
   display: flex;
   flex-wrap: wrap;
@@ -174,19 +175,74 @@ body::before {
 /* ---------- 关于我们 ---------- */
 .about-grid {
   display: grid;
-  grid-template-columns: 1fr 1.35fr;
-  gap: 26px;
-  align-items: center;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
-.about-photos { display: grid; gap: 16px; }
+.person-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid #ffe0ea;
+  box-shadow: var(--shadow);
+}
+.person-card .photo-card { border-radius: 0; box-shadow: none; }
+.person-info { padding: 16px 18px 18px; }
+.person-info h3 { font-size: 1.25rem; margin-bottom: 4px; }
+.person-line { font-size: 0.92rem; color: var(--text-soft); }
 .about-intro {
-  padding: 26px 28px;
+  grid-column: 1 / -1;
+  padding: 22px 26px;
   border-radius: 18px;
   background: var(--card);
   border: 1px solid #ffe0ea;
   box-shadow: var(--shadow);
   color: var(--text-soft);
   font-size: 0.98rem;
+}
+
+/* ---------- 纪念日与生日 ---------- */
+.birthday-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+  margin-bottom: 22px;
+}
+.birthday-card {
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffffff, #fff3f7);
+  border: 1px solid #ffe0ea;
+  box-shadow: var(--shadow);
+}
+.birthday-name { font-size: 1.1rem; font-weight: 700; }
+.birthday-date { margin-top: 2px; font-size: 0.92rem; color: var(--pink-3); }
+.birthday-age { font-size: 0.88rem; color: var(--text-soft); }
+.birthday-countdown { margin-top: 12px; font-size: 0.95rem; color: var(--text-soft); }
+.birthday-countdown b { margin: 0 4px; font-size: 1.3rem; color: var(--pink-2); }
+
+.milestone-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+.milestone-chip {
+  padding: 16px 14px;
+  text-align: center;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid #ffe0ea;
+  box-shadow: var(--shadow);
+}
+.milestone-label { font-weight: 700; }
+.milestone-date { margin: 4px 0; font-size: 0.85rem; color: var(--text-soft); }
+.milestone-status { font-size: 0.9rem; color: var(--pink-3); }
+.milestone-status b { font-size: 1.15rem; color: var(--pink-2); }
+.milestone-chip.is-past { opacity: 0.55; }
+.milestone-chip.is-today {
+  border-color: var(--pink-1);
+  background: linear-gradient(135deg, #fff0f5, #ffe3ec);
 }
 
 /* ---------- 照片卡片 ---------- */
