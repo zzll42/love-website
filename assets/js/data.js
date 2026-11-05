@@ -113,33 +113,51 @@ const GALLERY = [
 
 /* ---------- 4. 见面记录 ----------
  * 每次见面写一条，照下面的格式复制一份、改掉内容就行：
- *   date        = 见面日期（格式：年-月-日）
+ *   date        = 见面开始日期（格式：年-月-日）
+ *   endDate     = 见面结束日期（可省略）
  *   title       = 标题（比如"第一次见面"）
- *   location    = 见面的地点
+ *   location    = 见面的地点（可以空着 "")
  *   description = 那天发生的小故事
- *   photos      = 这次见面的照片，文件放在
- *                 assets/photos/gallery/ 或 assets/photos/meetings/见面日期/ 里
- *
- * 添加新的见面记录时，复制下面这个完整示例：
- * {
- *   date: "2026-05-31",
- *   title: "第一次见面",
- *   location: "地点",
- *   description: "那天……",
- *   photos: [
- *     { src: "gallery/photo-001.jpg", caption: "那天拍的" },
- *   ]
- * },
+ *   photos      = 这次见面的照片/视频（type: "video" 表示视频）
  * ------------------------------------------------ */
 const MEETINGS = [
   {
-    date: "2026-05-31",
-    title: "在一起的这一天",              // ← 这是示例记录，改成你们的真实见面记录即可
-    location: "示例 · 地点待填",
-    description: "这是示例记录：以后把每次见面的日期、地点和小故事填在这里。",
+    date: "2026-09-28",
+    endDate: "2026-10-12",
+    title: "第二次见面",
+    location: "",
+    description: "第二次见面，一起度过了 15 天。",
     photos: [
-      // 这次见面的照片，放进 assets/photos/gallery/ 后在这里写文件名：
-      // { src: "gallery/photo-001.jpg", caption: "见面照片 1" },
+      { src: "gallery/photo-063.jpg" },
+      { src: "gallery/photo-064.jpg" },
+      { src: "gallery/photo-065.jpg" },
+      { src: "gallery/photo-066.jpg" },
+      { src: "gallery/photo-067.jpg" },
+      { src: "gallery/photo-068.jpg" },
+      { src: "gallery/photo-069.jpg" },
+      { src: "gallery/photo-070.jpg" },
+      { src: "gallery/photo-071.jpg" },
+      { src: "gallery/photo-072.jpg" }
+    ]
+  },
+  {
+    date: "2026-07-19",
+    endDate: "2026-07-26",
+    title: "第一次见面",
+    location: "",
+    description: "第一次见面，一起度过了 8 天。",
+    photos: [
+      { src: "gallery/photo-049.jpg" },
+      { src: "gallery/photo-050.jpg" },
+      { src: "gallery/photo-051.jpg" },
+      { src: "gallery/photo-052.jpg" },
+      { src: "gallery/photo-053.jpg" },
+      { src: "gallery/photo-054.jpg" },
+      { src: "gallery/photo-055.jpg" },
+      { src: "gallery/photo-056.jpg" },
+      { src: "gallery/photo-057.jpg" },
+      { src: "gallery/photo-009.jpg" },
+      { src: "gallery/video-02.mp4", type: "video" }
     ]
   },
 ];
