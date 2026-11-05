@@ -436,6 +436,32 @@ body::before {
 .footer { text-align: center; padding: 42px 20px 48px; color: var(--text-soft); font-size: 0.9rem; }
 .footer p + p { margin-top: 4px; }
 
+/* ---------- 见面记录里的视频缩略图 ---------- */
+.photo-card.video-card video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  cursor: pointer;
+}
+.photo-card .play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 0.9rem;
+  padding-left: 3px;
+  pointer-events: none;
+}
+
 /* ---------- 图库页 ---------- */
 .gallery-toolbar {
   display: flex;
