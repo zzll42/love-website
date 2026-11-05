@@ -133,7 +133,7 @@ function photoCard(src, caption, placeholderText) {
   img.src = "assets/photos/" + src;
   img.alt = caption || "照片";
   img.loading = "lazy";
-  img.addEventListener("click", () => openLightbox(img.src, caption));
+  img.addEventListener("click", () => openLightbox(img.src, caption, "photo"));
   img.addEventListener("error", () => card.replaceWith(placeholderCard(placeholderText)));
   card.appendChild(img);
   if (caption) {
@@ -144,22 +144,42 @@ function photoCard(src, caption, placeholderText) {
   return card;
 }
 
-/* ---------- 灯箱 ---------- */
+/* ---------- 灯箱（照片放大 / 视频播放） ---------- */
 
 let lightbox = null;
-function openLightbox(src, caption) {
+function openLightbox(src, caption, type) {
   if (!lightbox) {
     lightbox = document.createElement("div");
     lightbox.className = "lightbox";
     const inner = document.createElement("div");
     inner.className = "lightbox-inner";
-    inner.innerHTML = '<img alt="大图"><p></p>';
+    inner.innerHTML = '<img alt="大图"><video controls playsinline></video><p></p>';
+    inner.addEventListener("click", e => e.stopPropagation());
     lightbox.appendChild(inner);
-    lightbox.addEventListener("click", () => lightbox.classList.remove("show"));
+    const vid = inner.querySelector("video");
+    vid.style.display = "none";
+    lightbox.addEventListener("click", () => {
+      vid.pause();
+      lightbox.classList.remove("show");
+    });
     document.body.appendChild(lightbox);
   }
-  lightbox.querySelector("img").src = src;
-  lightbox.querySelector("p").textContent = caption || "";
+  const img = lightbox.querySelector("img");
+  const vid = lightbox.querySelector("video");
+  const p = lightbox.querySelector("p");
+  const isVideo = (type === "video");
+  if (isVideo) {
+    img.style.display = "none";
+    vid.style.display = "block";
+    vid.src = src;
+    vid.play().catch(() => {});
+  } else {
+    vid.pause();
+    vid.style.display = "none";
+    img.style.display = "block";
+    img.src = src;
+  }
+  p.textContent = caption || "";
   lightbox.classList.add("show");
 }
 
@@ -438,6 +458,155 @@ function initMeetings() {
   });
 }
 
+/* ---------- 图库页 ---------- */
+
+// IndexedDB：访客在本设备添加的照片存这里（刷新后仍在）
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open("love-gallery", 1);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains("uploads")) {
+        req.result.createObjectStore("uploads", { keyPath: "id", autoIncrement: true });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbAddUploads(records) {
+  return idbOpen().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction("uploads", "readwrite");
+    const store = tx.objectStore("uploads");
+    records.forEach(r => store.add(r));
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  }));
+}
+
+function idbGetUploads() {
+  return idbOpen().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction("uploads", "readonly");
+    const store = tx.objectStore("uploads");
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  }));
+}
+
+function galleryItem(it) {
+  const fig = document.createElement("figure");
+  fig.className = "gallery-item" + (it.source === "local" ? " is-local" : "");
+
+  if (it.type === "video") {
+    const v = document.createElement("video");
+    v.src = it.src;
+    v.preload = "metadata";
+    v.muted = true;
+    v.playsInline = true;
+    v.addEventListener("click", () => openLightbox(it.src, "", "video"));
+    fig.appendChild(v);
+    const play = document.createElement("span");
+    play.className = "play-icon";
+    play.textContent = "▶";
+    fig.appendChild(play);
+  } else {
+    const img = document.createElement("img");
+    img.src = it.src;
+    img.alt = "照片";
+    img.loading = "lazy";
+    img.addEventListener("click", () => openLightbox(it.src, "", "photo"));
+    fig.appendChild(img);
+  }
+
+  if (it.source === "local") {
+    const tip = document.createElement("span");
+    tip.className = "local-badge";
+    tip.textContent = "本设备";
+    fig.appendChild(tip);
+  }
+  return fig;
+}
+
+function initGallery() {
+  const grid = document.getElementById("galleryGrid");
+  if (!grid) return;
+
+  const state = { filter: "all", local: [] };
+  const siteItems = GALLERY.map(g => ({ src: g.src, type: g.type || "photo", source: "site" }));
+
+  function allItems() { return siteItems.concat(state.local); }
+
+  function render() {
+    const all = allItems();
+    let list = all;
+    if (state.filter === "photo") list = all.filter(x => x.type !== "video");
+    if (state.filter === "video") list = all.filter(x => x.type === "video");
+    while (grid.firstChild) grid.removeChild(grid.firstChild);
+    list.forEach(it => grid.appendChild(galleryItem(it)));
+
+    document.getElementById("countAll").textContent = all.length;
+    document.getElementById("countPhoto").textContent = all.filter(x => x.type !== "video").length;
+    document.getElementById("countVideo").textContent = all.filter(x => x.type === "video").length;
+  }
+
+  // 读取本设备已添加的照片
+  idbGetUploads().then(records => {
+    records.forEach(r => {
+      state.local.push({
+        src: URL.createObjectURL(r.blob),
+        type: r.type === "video" ? "video" : "photo",
+        source: "local",
+        name: r.name
+      });
+    });
+    render();
+  }).catch(() => render());
+
+  render();
+
+  // 筛选按钮
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.filter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  // 添加照片
+  const input = document.getElementById("addFiles");
+  if (input) {
+    input.addEventListener("change", () => {
+      const files = Array.from(input.files || []);
+      if (!files.length) return;
+      const recs = [];
+      files.forEach(f => {
+        const isVideo = (f.type || "").indexOf("video") === 0 || /\.mp4$/i.test(f.name);
+        recs.push({ name: f.name, type: isVideo ? "video" : "photo", blob: f, time: Date.now() });
+      });
+      // 尽量保存到本设备（隐私模式/文件访问受限时可能失败，失败也不影响当次显示）
+      idbAddUploads(recs).catch(() => {});
+      recs.forEach(r => {
+        state.local.push({
+          src: URL.createObjectURL(r.blob),
+          type: r.type,
+          source: "local",
+          name: r.name
+        });
+      });
+      input.value = "";
+      const tipEl = document.getElementById("uploadTip");
+      if (tipEl) {
+        tipEl.textContent = "已添加 " + state.local.length + " 个文件（只保存在你当前设备上，其他人看不到）";
+        tipEl.hidden = false;
+      }
+      render();
+    });
+  }
+}
+
 /* ---------- 启动 ---------- */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -447,4 +616,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (PAGE === "home") initHome();
   if (PAGE === "meetings") initMeetings();
+  if (PAGE === "gallery") initGallery();
 });
