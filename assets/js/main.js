@@ -640,9 +640,75 @@ function initGallery() {
   }
 }
 
+/* ---------- 密码锁 ---------- */
+const LOCK_STORAGE_KEY = "love-site-unlocked";
+const LOCK_PASS_HASH = "29b8858c";   // "love" + 密码 的哈希值
+
+function simpleHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+  }
+  return h.toString(16);
+}
+
+function initLock() {
+  const screen = document.getElementById("lockScreen");
+  if (!screen) return;
+  const input = document.getElementById("lockInput");
+  const btn = document.getElementById("lockBtn");
+  const err = document.getElementById("lockError");
+  const card = screen.querySelector(".lock-card");
+
+  function unlock() {
+    try { localStorage.setItem(LOCK_STORAGE_KEY, "1"); } catch (e) { }
+    document.body.classList.remove("is-locked");
+    screen.classList.add("hide");
+    if (err) err.hidden = true;
+  }
+
+  let unlocked = false;
+  try { unlocked = localStorage.getItem(LOCK_STORAGE_KEY) === "1"; } catch (e) { }
+
+  if (unlocked) {
+    unlock();
+  } else {
+    document.body.classList.add("is-locked");
+    if (input) input.focus();
+    const check = () => {
+      const val = (input.value || "").trim();
+      if (simpleHash("love" + val) === LOCK_PASS_HASH) {
+        unlock();
+      } else {
+        if (err) err.hidden = false;
+        if (card) {
+          card.classList.remove("shake");
+          void card.offsetWidth;
+          card.classList.add("shake");
+        }
+        input.value = "";
+        input.focus();
+      }
+    };
+    if (btn) btn.addEventListener("click", check);
+    if (input) input.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+  }
+
+  // 导航栏的锁定按钮
+  const navLock = document.getElementById("lockBtnNav");
+  if (navLock) {
+    navLock.addEventListener("click", e => {
+      e.preventDefault();
+      try { localStorage.removeItem(LOCK_STORAGE_KEY); } catch (err2) { }
+      location.reload();
+    });
+  }
+}
+
 /* ---------- 启动 ---------- */
 
 document.addEventListener("DOMContentLoaded", () => {
+  initLock();
   const copy = document.getElementById("footerCopy");
   if (copy && SITE_CONFIG.startDate) {
     copy.textContent = "从 " + formatDate(SITE_CONFIG.startDate) + " 开始，一起走过每一天";
