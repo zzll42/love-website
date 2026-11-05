@@ -593,6 +593,83 @@ body::before {
   .gallery-toolbar { justify-content: center; }
 }
 
+/* ---------- 密码锁 ---------- */
+body.is-locked > *:not(#lockScreen) { display: none !important; }
+.lock-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(160deg, #fff5f8, #ffe3ec 60%, #fff7fa);
+}
+.lock-screen.hide { display: none; }
+.lock-card {
+  width: 100%;
+  max-width: 360px;
+  padding: 36px 30px;
+  border-radius: 24px;
+  background: #fff;
+  border: 1px solid #ffe0ea;
+  box-shadow: 0 20px 50px rgba(232, 67, 147, 0.18);
+  text-align: center;
+}
+.lock-heart { font-size: 2.6rem; }
+.lock-card h2 { font-size: 1.3rem; margin: 10px 0 4px; }
+.lock-sub { margin-bottom: 20px; color: var(--text-soft); font-size: 0.9rem; }
+.lock-card input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #ffd0dd;
+  background: #fff7fa;
+  font-size: 1rem;
+  text-align: center;
+  letter-spacing: 6px;
+  outline: none;
+  font-family: inherit;
+  color: var(--text);
+}
+.lock-card input:focus {
+  border-color: var(--pink-2);
+  box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.15);
+}
+.lock-card button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--pink-2), var(--pink-3));
+  box-shadow: 0 10px 22px rgba(232, 67, 147, 0.3);
+  font-family: inherit;
+}
+.lock-error { margin-top: 12px; color: var(--pink-2); font-size: 0.88rem; }
+.lock-card.shake { animation: shake 0.4s; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+  75% { transform: translateX(-5px); }
+}
+.nav-lock {
+  margin-left: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  border: 1px solid #ffe0ea;
+  background: rgba(255, 255, 255, 0.8);
+}
+.nav-lock:hover { color: var(--pink-3); background: var(--pink-soft); }
+
 /* ---------- 手机适配 ---------- */
 @media (max-width: 720px) {
   .about-grid { grid-template-columns: 1fr; }
