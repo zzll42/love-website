@@ -37,17 +37,19 @@
 ### 3. 添加见面记录
 
 1. 把这次见面的照片放进 `assets/photos/meetings/见面日期/`（例如 `assets/photos/meetings/2024-05-20/`）
-2. 在 `data.js` 的 `MEETINGS` 里加一条：
+3. 在 `data.js` 的 `MEETINGS` 里加一条（`endDate` 是结束日期，可省略）：
 
    ```js
    {
-     date: "2024-05-20",
+     date: "2026-07-19",
+     endDate: "2026-07-26",
      title: "第一次见面",
      location: "上海 · 外滩",
      description: "那天……",
      photos: [
-       { src: "meetings/2024-05-20/1.jpg", caption: "外滩合影" },
-       { src: "meetings/2024-05-20/2.jpg", caption: "一起吃的晚餐" },
+       { src: "gallery/photo-049.jpg", caption: "外滩合影" },
+       { src: "gallery/photo-050.jpg" },
+       { src: "gallery/video-02.mp4", type: "video" },
      ]
    },
    ```
