@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="记录我们的爱情：两个人的合照、在一起的天数，以及每一次见面的回忆。">
+<title>我们的爱情记录 💕</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="home">
+
+<!-- 顶部导航 -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">💕 我们的记录</a>
+    <div class="nav-links">
+      <a href="index.html" class="active">首页</a>
+      <a href="meetings.html">见面记录</a>
+    </div>
+  </div>
+</nav>
+
+<!-- 首页大标题 -->
+<header class="hero">
+  <div class="hearts" aria-hidden="true">
+    <span>💗</span><span>💕</span><span>💖</span><span>💘</span><span>💝</span><span>❤️</span>
+  </div>
+  <span class="hero-kicker">记录我们的每一个瞬间</span>
+  <h1 class="hero-title">我们的爱情记录</h1>
+  <p class="hero-names"><span id="boyName">···</span> 💕 <span id="girlName">···</span></p>
+
+  <div class="hero-counters">
+    <div class="counter-card">
+      <div class="counter-number" id="togetherDays">--</div>
+      <div class="counter-label">我们已经在一起（天）</div>
+    </div>
+    <div class="counter-card" id="nextMeetingCard" hidden>
+      <div class="counter-number" id="nextMeetingDays">--</div>
+      <div class="counter-label">距离下次见面（天）</div>
+    </div>
+  </div>
+</header>
+
+<!-- 关于我们 -->
+<section class="section">
+  <h2 class="section-title">关于我们</h2>
+  <div class="about-grid">
+    <div class="about-photos" id="aboutPhotos"></div>
+    <div class="about-intro" id="introText"></div>
+  </div>
+</section>
+
+<!-- 照片墙 -->
+<section class="section">
+  <h2 class="section-title">我们的照片墙</h2>
+  <p class="section-sub">每一张照片，都是我们的故事</p>
+  <div class="gallery" id="usGallery"></div>
+</section>
+
+<!-- 最近的见面 -->
+<section class="section">
+  <h2 class="section-title">最近的见面</h2>
+  <p class="section-sub">每一次见面，都值得被记住</p>
+  <div class="meetings-grid" id="recentMeetings"></div>
+  <div class="center"><a class="btn" href="meetings.html">查看全部见面记录 💕</a></div>
+</section>
+
+<footer class="footer">
+  <p>💕 用心记录我们的每一天 💕</p>
+  <p id="footerCopy"></p>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
