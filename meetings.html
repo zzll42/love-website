@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="我们的见面记录：每一次见面的日期、地点、故事和照片。">
+<title>见面记录 💕 我们的爱情记录</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="meetings">
+
+<!-- 顶部导航 -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">💕 我们的记录</a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="meetings.html" class="active">见面记录</a>
+    </div>
+  </div>
+</nav>
+
+<!-- 页面标题 -->
+<header class="page-hero">
+  <h1 class="hero-title">见面记录</h1>
+  <p class="section-sub">每一次见面，都是最期待的日子</p>
+</header>
+
+<section class="section">
+  <!-- 统计栏 -->
+  <div class="stats">
+    <div class="stat"><b id="statMeetings">--</b><span>见面次数</span></div>
+    <div class="stat"><b id="statPhotos">--</b><span>见面照片</span></div>
+    <div class="stat"><b id="statDays">--</b><span>在一起的天数</span></div>
+    <div class="stat"><b id="statRange">--</b><span>记录范围</span></div>
+  </div>
+
+  <!-- 时间轴：每次见面一条记录 -->
+  <div class="timeline" id="timeline"></div>
+</section>
+
+<footer class="footer">
+  <p>💕 用心记录我们的每一天 💕</p>
+  <p id="footerCopy"></p>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
