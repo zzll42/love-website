@@ -7,35 +7,110 @@ const PAGE = document.body.dataset.page;
 
 /* ---------- 小工具 ---------- */
 
-function photoUrl(src) {
-  return src ? "assets/photos/" + src : "";
+function parseDate(s) {
+  const p = String(s).split("-").map(Number);
+  if (p.length !== 3 || p.some(isNaN)) return null;
+  return new Date(p[0], p[1] - 1, p[2]);
 }
 
-// 2024-05-20 → 2024年5月20日
-function formatDate(dateStr) {
-  const parts = String(dateStr).split("-").map(Number);
-  if (parts.length !== 3 || parts.some(isNaN)) return dateStr;
-  return parts[0] + "年" + parts[1] + "月" + parts[2] + "日";
+// 支持 "2026-05-31" 字符串或 Date 对象 → 2026年5月31日
+function formatDate(d) {
+  let date = d;
+  if (!(d instanceof Date)) {
+    date = parseDate(d);
+    if (!date) return String(d);
+  }
+  return date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日";
 }
 
-// 两个日期之间相差多少天（按自然日）
-function daysBetween(fromStr, toStr) {
-  if (!fromStr || !toStr) return null;
-  const from = new Date(fromStr + "T00:00:00");
-  const to = new Date(toStr + "T00:00:00");
-  if (isNaN(from.getTime()) || isNaN(to.getTime())) return null;
-  return Math.floor((to - from) / 86400000);
-}
-
-function todayStr() {
+function today() {
   const d = new Date();
-  const p = n => String(n).padStart(2, "0");
-  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+function daysBetween(a, b) {
+  return Math.round((b - a) / 86400000);
+}
+
+// 精确差值：X年X个月X天
+function diffYMD(start, end) {
+  let y = end.getFullYear() - start.getFullYear();
+  let m = end.getMonth() - start.getMonth();
+  let d = end.getDate() - start.getDate();
+  if (d < 0) {
+    m--;
+    d += new Date(end.getFullYear(), end.getMonth(), 0).getDate();
+  }
+  if (m < 0) { y--; m += 12; }
+  return { y, m, d };
+}
+
+// 星座
+function zodiac(date) {
+  const m = date.getMonth() + 1, d = date.getDate();
+  const ranges = [
+    [1, 20, "水瓶座♒"], [2, 19, "双鱼座♓"], [3, 21, "白羊座♈"], [4, 20, "金牛座♉"],
+    [5, 21, "双子座♊"], [6, 22, "巨蟹座♋"], [7, 23, "狮子座♌"], [8, 23, "处女座♍"],
+    [9, 23, "天秤座♎"], [10, 24, "天蝎座♏"], [11, 23, "射手座♐"], [12, 22, "摩羯座♑"]
+  ];
+  for (let i = ranges.length - 1; i >= 0; i--) {
+    const rm = ranges[i][0], rd = ranges[i][1];
+    if (m > rm || (m === rm && d >= rd)) return ranges[i][2];
+  }
+  return ranges[ranges.length - 1][2];
+}
+
+// 生肖
+function chineseZodiac(year) {
+  const animals = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
+  return "属" + animals[((year - 4) % 12 + 12) % 12];
+}
+
+// 实足年龄
+function ageOn(birth, ref) {
+  let a = ref.getFullYear() - birth.getFullYear();
+  const bd = new Date(ref.getFullYear(), birth.getMonth(), birth.getDate());
+  if (ref < bd) a--;
+  return a;
+}
+
+// 距离下一个生日还有多少天
+function nextBirthdayDays(birth, ref) {
+  let bd = new Date(ref.getFullYear(), birth.getMonth(), birth.getDate());
+  if (bd < ref) bd = new Date(ref.getFullYear() + 1, birth.getMonth(), birth.getDate());
+  return daysBetween(ref, bd);
+}
+
+// 每月纪念日：和在一起日期同一个"日"，没有这一天的月份取当月最后一天
+function monthAnniversary(start, ref) {
+  const day = start.getDate();
+  const monthEnd = (y, m) => new Date(y, m + 1, 0).getDate();
+  let d = new Date(ref.getFullYear(), ref.getMonth(), Math.min(day, monthEnd(ref.getFullYear(), ref.getMonth())));
+  if (d < ref) {
+    d = new Date(ref.getFullYear(), ref.getMonth() + 1, Math.min(day, monthEnd(ref.getFullYear(), ref.getMonth() + 1)));
+  }
+  return d;
+}
+
+// 恋爱里程碑（从在一起那天算起）
+const MILESTONES = [
+  { label: "100天纪念日", days: 100 },
+  { label: "200天纪念日", days: 200 },
+  { label: "300天纪念日", days: 300 },
+  { label: "一周年纪念日", days: 365 },
+  { label: "520天纪念日", days: 520 },
+  { label: "两周年纪念日", days: 730 },
+  { label: "1000天纪念日", days: 1000 },
+];
 
 /* ---------- 照片卡片 ---------- */
 
-// 占位卡片：照片还没放进来时显示
 function placeholderCard(text) {
   const div = document.createElement("div");
   div.className = "photo-card is-placeholder";
@@ -50,13 +125,12 @@ function placeholderCard(text) {
   return div;
 }
 
-// 照片卡片：有图显示图，没图（或图片加载失败）自动换成占位卡片
 function photoCard(src, caption, placeholderText) {
   if (!src) return placeholderCard(placeholderText);
   const card = document.createElement("figure");
   card.className = "photo-card";
   const img = document.createElement("img");
-  img.src = photoUrl(src);
+  img.src = "assets/photos/" + src;
   img.alt = caption || "照片";
   img.loading = "lazy";
   img.addEventListener("click", () => openLightbox(img.src, caption));
@@ -70,7 +144,7 @@ function photoCard(src, caption, placeholderText) {
   return card;
 }
 
-/* ---------- 灯箱：点击照片放大 ---------- */
+/* ---------- 灯箱 ---------- */
 
 let lightbox = null;
 function openLightbox(src, caption) {
@@ -130,37 +204,168 @@ function meetingCard(meeting) {
   return card;
 }
 
+/* ---------- 人物卡片 ---------- */
+
+function personCard(name, birthStr, photo) {
+  const card = document.createElement("div");
+  card.className = "person-card";
+
+  if (photo) {
+    card.appendChild(photoCard(photo.src, photo.caption, "照片待添加"));
+  } else {
+    card.appendChild(placeholderCard("照片待添加"));
+  }
+
+  const info = document.createElement("div");
+  info.className = "person-info";
+  const h = document.createElement("h3");
+  h.textContent = name;
+  const line1 = document.createElement("div");
+  line1.className = "person-line";
+  const line2 = document.createElement("div");
+  line2.className = "person-line";
+  const birth = parseDate(birthStr);
+  if (birth) {
+    line1.textContent = "🎂 " + formatDate(birth) + " · " + ageOn(birth, today()) + " 岁";
+    line2.textContent = zodiac(birth) + " · " + chineseZodiac(birth.getFullYear());
+  }
+  info.appendChild(h);
+  info.appendChild(line1);
+  info.appendChild(line2);
+  card.appendChild(info);
+  return card;
+}
+
+/* ---------- 生日卡片 ---------- */
+
+function birthdayCard(name, birthStr) {
+  const birth = parseDate(birthStr);
+  const card = document.createElement("div");
+  card.className = "birthday-card";
+
+  const nameEl = document.createElement("div");
+  nameEl.className = "birthday-name";
+  nameEl.textContent = "🎂 " + name + "的生日";
+  card.appendChild(nameEl);
+
+  if (birth) {
+    const dateEl = document.createElement("div");
+    dateEl.className = "birthday-date";
+    dateEl.textContent = formatDate(birth) + " · " + zodiac(birth);
+    card.appendChild(dateEl);
+
+    const ageEl = document.createElement("div");
+    ageEl.className = "birthday-age";
+    ageEl.textContent = "今年 " + ageOn(birth, today()) + " 岁 · " + chineseZodiac(birth.getFullYear());
+    card.appendChild(ageEl);
+
+    const cd = document.createElement("div");
+    cd.className = "birthday-countdown";
+    const d = nextBirthdayDays(birth, today());
+    cd.innerHTML = d === 0 ? "生日就是今天！🎉" : "距离下次生日还有 <b>" + d + "</b> 天";
+    card.appendChild(cd);
+  }
+  return card;
+}
+
+/* ---------- 纪念日卡片 ---------- */
+
+function milestoneChip(label, date, ref) {
+  const chip = document.createElement("div");
+  chip.className = "milestone-chip";
+  const diff = daysBetween(ref, date);
+
+  let status;
+  if (diff > 0) status = "还有 <b>" + diff + "</b> 天";
+  else if (diff === 0) { status = "就是今天 🎉"; chip.classList.add("is-today"); }
+  else { status = "✅ 已过"; chip.classList.add("is-past"); }
+
+  const labelEl = document.createElement("div");
+  labelEl.className = "milestone-label";
+  labelEl.textContent = label;
+  const dateEl = document.createElement("div");
+  dateEl.className = "milestone-date";
+  dateEl.textContent = formatDate(date);
+  const statusEl = document.createElement("div");
+  statusEl.className = "milestone-status";
+  statusEl.innerHTML = status;
+
+  chip.appendChild(labelEl);
+  chip.appendChild(dateEl);
+  chip.appendChild(statusEl);
+  return chip;
+}
+
 /* ---------- 首页 ---------- */
 
 function initHome() {
-  // 名字和浏览器标签标题
-  document.getElementById("boyName").textContent = SITE_CONFIG.boyName;
-  document.getElementById("girlName").textContent = SITE_CONFIG.girlName;
-  document.title = SITE_CONFIG.boyName + " 💕 " + SITE_CONFIG.girlName + " 的爱情记录";
+  const cfg = SITE_CONFIG;
+  document.getElementById("boyName").textContent = cfg.boyName;
+  document.getElementById("girlName").textContent = cfg.girlName;
+  document.title = cfg.boyName + " 💕 " + cfg.girlName + " 的爱情记录";
 
-  // 在一起的天数
-  const together = daysBetween(SITE_CONFIG.startDate, todayStr());
-  document.getElementById("togetherDays").textContent =
-    (together === null || together < 0) ? "--" : together;
+  const start = parseDate(cfg.startDate);
+  const now = today();
 
-  // 下次见面倒计时（没填日期就不显示这张卡片）
-  const nextDays = daysBetween(todayStr(), SITE_CONFIG.nextMeeting);
-  if (nextDays !== null) {
-    document.getElementById("nextMeetingDays").textContent = Math.max(0, nextDays);
-    document.getElementById("nextMeetingCard").hidden = false;
+  // 在一起：总天数 + 精确时长
+  if (start) {
+    const together = daysBetween(start, now);
+    document.getElementById("togetherDays").textContent = together >= 0 ? together : "--";
+    const ymd = diffYMD(start, now);
+    const parts = [];
+    if (ymd.y) parts.push(ymd.y + " 年");
+    if (ymd.m) parts.push(ymd.m + " 个月");
+    parts.push(ymd.d + " 天");
+    document.getElementById("togetherLabel").textContent = "已经在一起 " + parts.join(" ");
+    document.getElementById("heroSince").textContent = "从 " + formatDate(start) + " 起，我们的故事开始了";
   }
 
-  // 关于我们：显示前两张合照 + 介绍文字
-  const aboutBox = document.getElementById("aboutPhotos");
-  const firstTwo = US_PHOTOS.slice(0, 2);
-  if (firstTwo.length) {
-    firstTwo.forEach(p => aboutBox.appendChild(photoCard(p.src, p.caption, "我们的照片")));
-  } else {
-    aboutBox.appendChild(placeholderCard("我们的照片待添加"));
+  // 下一个大纪念日倒计时
+  if (start) {
+    const upcoming = MILESTONES
+      .map(m => ({ label: m.label, date: addDays(start, m.days) }))
+      .filter(m => daysBetween(now, m.date) >= 0)
+      .sort((a, b) => a.date - b.date);
+    if (upcoming.length) {
+      document.getElementById("nextMilestoneDays").textContent = daysBetween(now, upcoming[0].date);
+      document.getElementById("nextMilestoneLabel").textContent = "距离" + upcoming[0].label + "还有";
+    }
   }
-  document.getElementById("introText").textContent = SITE_CONFIG.intro;
 
-  // 照片墙：显示全部合照
+  // 下次见面倒计时（没填日期就不显示）
+  if (cfg.nextMeeting) {
+    const next = parseDate(cfg.nextMeeting);
+    if (next) {
+      const d = daysBetween(now, next);
+      if (d >= 0) {
+        document.getElementById("nextMeetingDays").textContent = d;
+        document.getElementById("nextMeetingCard").hidden = false;
+      }
+    }
+  }
+
+  // 关于我们：两个人的卡片 + 介绍
+  const aboutGrid = document.getElementById("aboutGrid");
+  aboutGrid.appendChild(personCard(cfg.boyName, cfg.boyBirthday, US_PHOTOS[0] || null));
+  aboutGrid.appendChild(personCard(cfg.girlName, cfg.girlBirthday, US_PHOTOS[1] || null));
+  const intro = document.createElement("div");
+  intro.className = "about-intro";
+  intro.textContent = cfg.intro;
+  aboutGrid.appendChild(intro);
+
+  // 生日卡片
+  const bdGrid = document.getElementById("birthdayCards");
+  bdGrid.appendChild(birthdayCard(cfg.boyName, cfg.boyBirthday));
+  bdGrid.appendChild(birthdayCard(cfg.girlName, cfg.girlBirthday));
+
+  // 纪念日列表
+  if (start) {
+    const msGrid = document.getElementById("milestoneList");
+    msGrid.appendChild(milestoneChip("每月纪念日", monthAnniversary(start, now), now));
+    MILESTONES.forEach(m => msGrid.appendChild(milestoneChip(m.label, addDays(start, m.days), now)));
+  }
+
+  // 照片墙
   const gallery = document.getElementById("usGallery");
   if (!US_PHOTOS.length) {
     const tip = document.createElement("div");
@@ -171,7 +376,7 @@ function initHome() {
     US_PHOTOS.forEach(p => gallery.appendChild(photoCard(p.src, p.caption, "照片待添加")));
   }
 
-  // 最近的见面（最多显示 3 条）
+  // 最近的见面（最多 3 条）
   const recentWrap = document.getElementById("recentMeetings");
   const latest = [...MEETINGS].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
   if (!latest.length) {
@@ -187,25 +392,23 @@ function initHome() {
 /* ---------- 见面记录页 ---------- */
 
 function initMeetings() {
-  document.title = "见面记录 💕 我们的爱情记录";
+  document.title = "见面记录 💕 " + SITE_CONFIG.boyName + " & " + SITE_CONFIG.girlName;
 
-  // 按日期从新到旧排序
   const sorted = [...MEETINGS].sort((a, b) => b.date.localeCompare(a.date));
   const total = sorted.length;
   let photoCount = 0;
   sorted.forEach(m => { photoCount += (m.photos || []).length; });
 
-  // 顶部统计
   document.getElementById("statMeetings").textContent = total;
   document.getElementById("statPhotos").textContent = photoCount;
-  const together = daysBetween(SITE_CONFIG.startDate, todayStr());
+  const start = parseDate(SITE_CONFIG.startDate);
+  const together = start ? daysBetween(start, today()) : null;
   document.getElementById("statDays").textContent =
     (together === null || together < 0) ? "--" : together;
   document.getElementById("statRange").textContent = total
     ? formatDate(sorted[total - 1].date) + " ~ " + formatDate(sorted[0].date)
     : "--";
 
-  // 时间轴
   const timeline = document.getElementById("timeline");
   if (!total) {
     const tip = document.createElement("div");
@@ -225,7 +428,6 @@ function initMeetings() {
     entry.appendChild(dot);
 
     const card = meetingCard(m);
-    // "第几次见面"徽章：从最早一次算起
     const badge = document.createElement("div");
     badge.className = "meeting-times";
     badge.textContent = "第 " + (total - i) + " 次见面";
