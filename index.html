@@ -29,11 +29,16 @@
   <span class="hero-kicker">记录我们的每一个瞬间</span>
   <h1 class="hero-title">我们的爱情记录</h1>
   <p class="hero-names"><span id="boyName">···</span> 💕 <span id="girlName">···</span></p>
+  <p class="hero-since" id="heroSince"></p>
 
   <div class="hero-counters">
     <div class="counter-card">
       <div class="counter-number" id="togetherDays">--</div>
-      <div class="counter-label">我们已经在一起（天）</div>
+      <div class="counter-label" id="togetherLabel">我们已经在一起</div>
+    </div>
+    <div class="counter-card">
+      <div class="counter-number" id="nextMilestoneDays">--</div>
+      <div class="counter-label" id="nextMilestoneLabel">距离下一个纪念日</div>
     </div>
     <div class="counter-card" id="nextMeetingCard" hidden>
       <div class="counter-number" id="nextMeetingDays">--</div>
@@ -45,10 +50,15 @@
 <!-- 关于我们 -->
 <section class="section">
   <h2 class="section-title">关于我们</h2>
-  <div class="about-grid">
-    <div class="about-photos" id="aboutPhotos"></div>
-    <div class="about-intro" id="introText"></div>
-  </div>
+  <div class="about-grid" id="aboutGrid"></div>
+</section>
+
+<!-- 我们的纪念日 -->
+<section class="section">
+  <h2 class="section-title">我们的纪念日</h2>
+  <p class="section-sub">每一个日子，都值得倒数与庆祝</p>
+  <div class="birthday-grid" id="birthdayCards"></div>
+  <div class="milestone-grid" id="milestoneList"></div>
 </section>
 
 <!-- 照片墙 -->
