@@ -185,13 +185,43 @@ function openLightbox(src, caption, type) {
 
 /* ---------- 见面记录卡片（首页和见面记录页共用） ---------- */
 
+function videoThumb(src, caption) {
+  const card = document.createElement("figure");
+  card.className = "photo-card video-card";
+  const v = document.createElement("video");
+  v.src = "assets/photos/" + src;
+  v.preload = "metadata";
+  v.muted = true;
+  v.playsInline = true;
+  v.addEventListener("click", () => openLightbox(v.src, caption, "video"));
+  card.appendChild(v);
+  const play = document.createElement("span");
+  play.className = "play-icon";
+  play.textContent = "▶";
+  card.appendChild(play);
+  if (caption) {
+    const fig = document.createElement("figcaption");
+    fig.textContent = caption;
+    card.appendChild(fig);
+  }
+  return card;
+}
+
 function meetingCard(meeting) {
   const card = document.createElement("div");
   card.className = "meeting-card";
 
   const date = document.createElement("div");
   date.className = "meeting-date";
-  date.textContent = "📅 " + formatDate(meeting.date);
+  let dateText = "📅 " + formatDate(meeting.date);
+  if (meeting.endDate) {
+    const s = parseDate(meeting.date);
+    const e = parseDate(meeting.endDate);
+    if (s && e) {
+      dateText += " - " + formatDate(e) + " · 共 " + (daysBetween(s, e) + 1) + " 天";
+    }
+  }
+  date.textContent = dateText;
   card.appendChild(date);
 
   const title = document.createElement("h3");
@@ -216,7 +246,10 @@ function meetingCard(meeting) {
   photos.className = "meeting-photos";
   const list = meeting.photos || [];
   if (list.length) {
-    list.forEach(p => photos.appendChild(photoCard(p.src, p.caption, "这次见面的照片")));
+    list.forEach(p => {
+      if (p.type === "video") photos.appendChild(videoThumb(p.src, p.caption));
+      else photos.appendChild(photoCard(p.src, p.caption, "这次见面的照片"));
+    });
   } else {
     photos.appendChild(placeholderCard("这次见面的照片还没放进来"));
   }
